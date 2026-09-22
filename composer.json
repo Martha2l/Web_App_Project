@@ -1,0 +1,11 @@
+{
+  "name": "cpe66/northwind-product-manager",
+  "description": "Northwind Product Manager Web Application with PHP and MySQL",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-json": "*"
+  }
+}
