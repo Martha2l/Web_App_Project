@@ -7,37 +7,24 @@ function getDB(): PDO {
         return $pdo;
     }
 
-    // 1. อ่านค่าจาก Railway Environment Variables
+    // 1. ดึงค่าจาก Railway Environment Variables
     $host = getenv('MYSQLHOST') ?: ($_ENV['MYSQLHOST'] ?? ($_SERVER['MYSQLHOST'] ?? null));
     $port = getenv('MYSQLPORT') ?: ($_ENV['MYSQLPORT'] ?? ($_SERVER['MYSQLPORT'] ?? null));
-    $name = getenv('MYSQLDATABASE') ?: ($_ENV['MYSQLDATABASE'] ?? ($_SERVER['MYSQLDATABASE'] ?? null));
     $user = getenv('MYSQLUSER') ?: ($_ENV['MYSQLUSER'] ?? ($_SERVER['MYSQLUSER'] ?? null));
     $pass = getenv('MYSQLPASSWORD') ?: ($_ENV['MYSQLPASSWORD'] ?? ($_SERVER['MYSQLPASSWORD'] ?? null));
 
-    $mysqlUrl = getenv('MYSQL_URL') ?: ($_ENV['MYSQL_URL'] ?? ($_SERVER['MYSQL_URL'] ?? null));
-    if ($mysqlUrl && (!$host || !$user)) {
-        $parsed = parse_url($mysqlUrl);
-        if ($parsed) {
-            $host = $parsed['host'] ?? $host;
-            $port = (string)($parsed['port'] ?? $port);
-            $user = $parsed['user'] ?? $user;
-            $pass = $parsed['pass'] ?? $pass;
-            $name = ltrim($parsed['path'] ?? '', '/') ?: $name;
-        }
-    }
-
-    // 2. ตั้งค่า Connection
+    // 2. ป้องกัน PDO Error [2002] Unix Socket
     if ($host === 'localhost' || !$host) {
         $host = getenv('RAILWAY_ENVIRONMENT') ? 'mysql.railway.internal' : '127.0.0.1';
     }
 
+    // 3. กำหนดค่าเริ่มต้น (บังคับชี้ไปที่ DB ชื่อ railway)
     $port = $port ?: '3306';
-    
-    // บังคับให้ใช้ db_northwind เสมอ
-    $name = 'db_northwind';
+    $name = 'railway'; // บังคับใช้ชื่อฐานข้อมูลเริ่มต้นของ Railway
     $user = $user ?: 'root';
     $pass = ($pass !== false && $pass !== null) ? $pass : '';
 
+    // 4. เชื่อมต่อ PDO
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
     
     try {
@@ -55,7 +42,3 @@ function getDB(): PDO {
 function db(): PDO {
     return getDB();
 }
-
-<?php
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
