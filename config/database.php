@@ -7,7 +7,7 @@ function getDB(): PDO {
         return $pdo;
     }
 
-    // 1. ดึงค่า Environment Variables โดยเช็กทั้ง getenv(), $_ENV และ $_SERVER
+    // 1. ดึงค่า Environment Variables
     $host = getenv('MYSQLHOST') ?: ($_ENV['MYSQLHOST'] ?? ($_SERVER['MYSQLHOST'] ?? null));
     $port = getenv('MYSQLPORT') ?: ($_ENV['MYSQLPORT'] ?? ($_SERVER['MYSQLPORT'] ?? null));
     $name = getenv('MYSQLDATABASE') ?: ($_ENV['MYSQLDATABASE'] ?? ($_SERVER['MYSQLDATABASE'] ?? null));
@@ -28,18 +28,22 @@ function getDB(): PDO {
     }
 
     // 2. ป้องกัน PDO Error [2002] Unix Socket
-    // หาก $host เป็น 'localhost' ให้เปลี่ยนเป็น IP หรือ Internal Domain ของ Railway
     if ($host === 'localhost' || !$host) {
         $host = getenv('RAILWAY_ENVIRONMENT') ? 'mysql.railway.internal' : '127.0.0.1';
     }
 
-    // ค่า Default สำหรับ Localhost
+    // 3. กำหนดค่าสำหรับ Database (บังคับชี้ไปที่ db_northwind)
     $port = $port ?: '3306';
-    $name = ($name === 'railway' || !$name) ? 'db_northwind' : $name;
+    
+    // หากไม่พบชื่อฐานข้อมูล หรือเป็นชื่อเริ่มต้นของ Railway ให้บังคับใช้ db_northwind
+    if (!$name || $name === 'railway') {
+        $name = 'db_northwind';
+    }
+
     $user = $user ?: 'root';
     $pass = ($pass !== false && $pass !== null) ? $pass : '';
 
-    // 3. เชื่อมต่อ PDO ผ่าน TCP/IP (กำหนด host และ port ชัดเจน)
+    // 4. เชื่อมต่อ PDO ผ่าน TCP/IP
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
     
     try {
