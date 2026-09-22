@@ -1,26 +1,21 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Database Connection Helper
- * รองรับทั้ง Railway PaaS (Environment Variables) 
- * และ Localhost (MAMP / XAMPP) อัตโนมัติ
- */
 function getDB(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) {
         return $pdo;
     }
 
-    // 1. ตรวจสอบค่าจาก Railway หรือ Environment Variables
-    $host = getenv('MYSQLHOST') ?: getenv('DB_HOST');
-    $port = getenv('MYSQLPORT') ?: getenv('DB_PORT');
-    $name = getenv('MYSQLDATABASE') ?: getenv('DB_NAME');
-    $user = getenv('MYSQLUSER') ?: getenv('DB_USER');
-    $pass = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS');
+    // 1. ดึงค่า Environment Variables โดยเช็กทั้ง getenv(), $_ENV และ $_SERVER
+    $host = getenv('MYSQLHOST') ?: ($_ENV['MYSQLHOST'] ?? ($_SERVER['MYSQLHOST'] ?? null));
+    $port = getenv('MYSQLPORT') ?: ($_ENV['MYSQLPORT'] ?? ($_SERVER['MYSQLPORT'] ?? null));
+    $name = getenv('MYSQLDATABASE') ?: ($_ENV['MYSQLDATABASE'] ?? ($_SERVER['MYSQLDATABASE'] ?? null));
+    $user = getenv('MYSQLUSER') ?: ($_ENV['MYSQLUSER'] ?? ($_SERVER['MYSQLUSER'] ?? null));
+    $pass = getenv('MYSQLPASSWORD') ?: ($_ENV['MYSQLPASSWORD'] ?? ($_SERVER['MYSQLPASSWORD'] ?? null));
 
-    // ตรวจสอบกรณี Railway ให้มาในรูป MYSQL_URL เช่น mysql://root:pass@host:port/railway
-    $mysqlUrl = getenv('MYSQL_URL');
+    // เช็กกรณีส่งมาเป็น MYSQL_URL
+    $mysqlUrl = getenv('MYSQL_URL') ?: ($_ENV['MYSQL_URL'] ?? ($_SERVER['MYSQL_URL'] ?? null));
     if ($mysqlUrl && (!$host || !$user)) {
         $parsed = parse_url($mysqlUrl);
         if ($parsed) {
@@ -32,69 +27,33 @@ function getDB(): PDO {
         }
     }
 
-    // 2. ถ้าอยู่บน Localhost (ยังไม่มี Environment Variables)
-    if (!$host) {
-        $host = '127.0.0.1';
-    }
-    if (!$port) {
-        $port = '3306';
-    }
-    if (!$name) {
-        $name = 'db_northwind';
-    }
-    if (!$user) {
-        $user = 'root';
+    // 2. ป้องกัน PDO Error [2002] Unix Socket
+    // หาก $host เป็น 'localhost' ให้เปลี่ยนเป็น IP หรือ Internal Domain ของ Railway
+    if ($host === 'localhost' || !$host) {
+        $host = getenv('RAILWAY_ENVIRONMENT') ? 'mysql.railway.internal' : '127.0.0.1';
     }
 
-    // สำหรับรหัสผ่าน Localhost: ลองทั้ง 'root' (MAMP) และ '' (XAMPP)
-    $passwordsToTry = ($pass !== false && $pass !== null && $pass !== '') 
-        ? [$pass] 
-        : ['root', ''];
+    // ค่า Default สำหรับ Localhost
+    $port = $port ?: '3306';
+    $name = $name ?: 'db_northwind';
+    $user = $user ?: 'root';
+    $pass = ($pass !== false && $pass !== null) ? $pass : '';
 
-    $lastException = null;
-    foreach ($passwordsToTry as $tryPass) {
-        try {
-            $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
-            $pdo = new PDO($dsn, $user, $tryPass, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
-            ]);
-            return $pdo;
-        } catch (PDOException $e) {
-            $lastException = $e;
-        }
+    // 3. เชื่อมต่อ PDO ผ่าน TCP/IP (กำหนด host และ port ชัดเจน)
+    $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
+    
+    try {
+        $pdo = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ]);
+        return $pdo;
+    } catch (PDOException $e) {
+        throw new RuntimeException("Database Connection Error: " . $e->getMessage());
     }
-
-    // ถ้ายังไม่ได้ ลอง localhost เผื่อ socket resolution
-    if ($host === '127.0.0.1') {
-        foreach ($passwordsToTry as $tryPass) {
-            try {
-                $dsn = "mysql:host=localhost;port={$port};dbname={$name};charset=utf8mb4";
-                $pdo = new PDO($dsn, $user, $tryPass, [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                ]);
-                return $pdo;
-            } catch (PDOException $e) {
-                $lastException = $e;
-            }
-        }
-    }
-
-    throw new RuntimeException("Database Connection Error: " . ($lastException ? $lastException->getMessage() : "Unknown error"));
 }
 
-// Alias function เพื่อความยืดหยุ่นในการเรียกใช้งาน
 function db(): PDO {
     return getDB();
 }
-
-// Class wrapper สำหรับโค้ดแบบ OOP
-class Database {
-    public function getConnection(): PDO {
-        return getDB();
-    }
-}
-

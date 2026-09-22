@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.2
+-- version 5.1.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Mar 22, 2025 at 08:04 AM
--- Server version: 10.4.14-MariaDB
--- PHP Version: 7.4.10
+-- Host: localhost:3306
+-- Generation Time: Sep 22, 2026 at 11:58 AM
+-- Server version: 5.7.24
+-- PHP Version: 8.3.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,10 +18,8 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `db_northwind_cpe2204`
+-- Database: `db_northwind`
 --
-CREATE DATABASE IF NOT EXISTS `db_northwind` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE `db_northwind`;
 
 -- --------------------------------------------------------
 
@@ -29,7 +27,6 @@ USE `db_northwind`;
 -- Table structure for table `tb_categories`
 --
 
-DROP TABLE IF EXISTS `tb_categories`;
 CREATE TABLE `tb_categories` (
   `i_CategoryID` int(11) NOT NULL,
   `c_CategoryName` varchar(30) NOT NULL,
@@ -40,7 +37,7 @@ CREATE TABLE `tb_categories` (
 -- Dumping data for table `tb_categories`
 --
 
-INSERT INTO `tb_categories` VALUES
+INSERT INTO `tb_categories` (`i_CategoryID`, `c_CategoryName`, `c_Description`) VALUES
 (1, 'Beverages', 'Soft drinks, coffees, teas, be'),
 (2, 'Condiments', 'Sweet and savory sauces, relis'),
 (3, 'Confections', 'Desserts, candies, and sweet b'),
@@ -57,7 +54,6 @@ INSERT INTO `tb_categories` VALUES
 -- Table structure for table `tb_customers`
 --
 
-DROP TABLE IF EXISTS `tb_customers`;
 CREATE TABLE `tb_customers` (
   `i_customerid` int(11) NOT NULL,
   `c_customername` varchar(50) NOT NULL,
@@ -72,7 +68,7 @@ CREATE TABLE `tb_customers` (
 -- Dumping data for table `tb_customers`
 --
 
-INSERT INTO `tb_customers` VALUES
+INSERT INTO `tb_customers` (`i_customerid`, `c_customername`, `c_contactname`, `c_address`, `c_city`, `c_postalcode`, `c_country`) VALUES
 (1, 'Alfreds Futterkiste', 'Maria Anders', 'Obere Str. 57', 'Berlin', '12209', 'Germany'),
 (2, 'Ana Trujillo Emparedados y helados', 'Ana Trujillo', 'Avda. de la Constitución 2222', 'México D.F.', '5021', 'Mexico'),
 (3, 'Antonio Moreno Taquería', 'Antonio Moreno', 'Mataderos 2312', 'México D.F.', '5023', 'Mexico'),
@@ -171,7 +167,6 @@ INSERT INTO `tb_customers` VALUES
 -- Table structure for table `tb_employees`
 --
 
-DROP TABLE IF EXISTS `tb_employees`;
 CREATE TABLE `tb_employees` (
   `i_EmployeeID` int(11) NOT NULL,
   `c_LastName` varchar(30) NOT NULL,
@@ -185,7 +180,7 @@ CREATE TABLE `tb_employees` (
 -- Dumping data for table `tb_employees`
 --
 
-INSERT INTO `tb_employees` VALUES
+INSERT INTO `tb_employees` (`i_EmployeeID`, `c_LastName`, `c_FirstName`, `c_BirthDate`, `c_Photo`, `c_Notes`) VALUES
 (1, 'Davolio', 'Nancy', '8/12/1968', 'EmpID1.pic', 'Education includes a BA in psychology from Colorado State University. She also c'),
 (2, 'Fuller', 'Andrew', '19/2/1952', 'EmpID2.pic', 'Andrew received his BTS commercial and a Ph.D. in international marketing from t'),
 (3, 'Leverling', 'Janet', '30/8/1963', 'EmpID3.pic', 'Janet has a BS degree in chemistry from Boston College). She has also completed '),
@@ -203,7 +198,6 @@ INSERT INTO `tb_employees` VALUES
 -- Table structure for table `tb_orderdetails`
 --
 
-DROP TABLE IF EXISTS `tb_orderdetails`;
 CREATE TABLE `tb_orderdetails` (
   `i_OrderDetailID` int(11) NOT NULL,
   `i_OrderID` int(11) NOT NULL,
@@ -215,7 +209,7 @@ CREATE TABLE `tb_orderdetails` (
 -- Dumping data for table `tb_orderdetails`
 --
 
-INSERT INTO `tb_orderdetails` VALUES
+INSERT INTO `tb_orderdetails` (`i_OrderDetailID`, `i_OrderID`, `i_ProductID`, `i_Quantity`) VALUES
 (1, 10248, 11, 12),
 (2, 10248, 42, 10),
 (3, 10248, 72, 5),
@@ -741,7 +735,6 @@ INSERT INTO `tb_orderdetails` VALUES
 -- Table structure for table `tb_orders`
 --
 
-DROP TABLE IF EXISTS `tb_orders`;
 CREATE TABLE `tb_orders` (
   `i_OrderID` int(11) NOT NULL,
   `i_CustomerID` int(11) NOT NULL,
@@ -754,7 +747,7 @@ CREATE TABLE `tb_orders` (
 -- Dumping data for table `tb_orders`
 --
 
-INSERT INTO `tb_orders` VALUES
+INSERT INTO `tb_orders` (`i_OrderID`, `i_CustomerID`, `i_EmployeeID`, `c_OrderDate`, `i_ShipperID`) VALUES
 (10248, 90, 5, '4/7/1996', 3),
 (10249, 81, 6, '5/7/1996', 1),
 (10250, 34, 4, '8/7/1996', 2),
@@ -958,12 +951,11 @@ INSERT INTO `tb_orders` VALUES
 -- Table structure for table `tb_products`
 --
 
-DROP TABLE IF EXISTS `tb_products`;
 CREATE TABLE `tb_products` (
   `i_ProductID` int(11) NOT NULL,
   `c_ProductName` varchar(30) NOT NULL,
-  `i_SupplierID` int(11) NOT NULL,
-  `i_CategoryID` int(11) NOT NULL,
+  `i_SupplierID` int(11) NOT NULL DEFAULT '1',
+  `i_CategoryID` int(11) NOT NULL DEFAULT '1',
   `c_Unit` varchar(30) NOT NULL,
   `i_Price` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -972,7 +964,7 @@ CREATE TABLE `tb_products` (
 -- Dumping data for table `tb_products`
 --
 
-INSERT INTO `tb_products` VALUES
+INSERT INTO `tb_products` (`i_ProductID`, `c_ProductName`, `i_SupplierID`, `i_CategoryID`, `c_Unit`, `i_Price`) VALUES
 (1, 'Chaiss', 2, 3, '10 boxes x 20 bagss', 40),
 (2, 'Chang', 1, 1, '24 - 12 oz bottles', 19),
 (3, 'Aniseed Syrup', 1, 2, '12 - 550 ml bottles', 10),
@@ -1051,7 +1043,11 @@ INSERT INTO `tb_products` VALUES
 (76, 'Lakkalik??ri', 23, 1, '500 ml', 18),
 (77, 'Original Frankfurter gr?ne So?', 12, 2, '12 boxes', 13),
 (101, 'XXX', 99, 98, 'UUUU', 1000),
-(102, 'NIKE', 2, 9, 'box', 25000);
+(102, 'NIKE', 2, 9, 'box', 25000),
+(103, 'พัดลมไอเย็น 10 ลิตร', 4, 9, '1 เครื่อง', 2290),
+(104, 'พัดลมไอเย็น 10 ลิตร', 4, 9, '1 เครื่อง', 2290),
+(105, 'พัดลมไอเย็น 10 ลิตร', 4, 9, '1 เครื่อง', 2290),
+(106, 'ชาไทยพรีเมียม', 1, 1, 'pack', 1550);
 
 -- --------------------------------------------------------
 
@@ -1059,7 +1055,6 @@ INSERT INTO `tb_products` VALUES
 -- Table structure for table `tb_shippers`
 --
 
-DROP TABLE IF EXISTS `tb_shippers`;
 CREATE TABLE `tb_shippers` (
   `i_ShipperID` int(11) NOT NULL,
   `c_ShipperName` varchar(30) NOT NULL,
@@ -1070,7 +1065,7 @@ CREATE TABLE `tb_shippers` (
 -- Dumping data for table `tb_shippers`
 --
 
-INSERT INTO `tb_shippers` VALUES
+INSERT INTO `tb_shippers` (`i_ShipperID`, `c_ShipperName`, `c_Phone`) VALUES
 (1, 'Speedy Express', '(503) 555-9831'),
 (2, 'United Package', '(503) 555-3199'),
 (3, 'Federal Shipping', '(503) 555-9931');
@@ -1081,7 +1076,6 @@ INSERT INTO `tb_shippers` VALUES
 -- Table structure for table `tb_student`
 --
 
-DROP TABLE IF EXISTS `tb_student`;
 CREATE TABLE `tb_student` (
   `c_stu_id` varchar(10) NOT NULL,
   `c_stu_name` varchar(50) NOT NULL,
@@ -1093,7 +1087,7 @@ CREATE TABLE `tb_student` (
 -- Dumping data for table `tb_student`
 --
 
-INSERT INTO `tb_student` VALUES
+INSERT INTO `tb_student` (`c_stu_id`, `c_stu_name`, `c_stu_sname`, `d_stu_hbd`) VALUES
 ('46554664', 'dfsdfdsf', 'gfsdfdsfds', '2021-02-10');
 
 -- --------------------------------------------------------
@@ -1102,7 +1096,6 @@ INSERT INTO `tb_student` VALUES
 -- Table structure for table `tb_suppliers`
 --
 
-DROP TABLE IF EXISTS `tb_suppliers`;
 CREATE TABLE `tb_suppliers` (
   `i_SupplierID` int(11) NOT NULL,
   `c_SupplierName` varchar(30) NOT NULL,
@@ -1118,7 +1111,7 @@ CREATE TABLE `tb_suppliers` (
 -- Dumping data for table `tb_suppliers`
 --
 
-INSERT INTO `tb_suppliers` VALUES
+INSERT INTO `tb_suppliers` (`i_SupplierID`, `c_SupplierName`, `c_ContactName`, `c_Address`, `c_City`, `c_PostalCode`, `c_Country`, `c_Phone`) VALUES
 (1, 'Exotic Liquid', 'Charlotte Cooper', '49 Gilbert St.', 'Londona', 'EC1 4SD', 'UK', '(171) 555-2222'),
 (2, 'New Orleans Cajun Delights', 'Shelley Burke', 'P.O. Box 78934', 'New Orleans', '70117', 'USA', '(100) 555-4822'),
 (3, 'Grandma Kelly\'s Homestead', 'Regina Murphy', '707 Oxford Rd.', 'Ann Arbor', '48104', 'USA', '(313) 555-5735'),
@@ -1148,6 +1141,25 @@ INSERT INTO `tb_suppliers` VALUES
 (27, 'Escargots Nouveaux', 'Marie Delamare', '22, rue H. Voiron', 'Montceau', '71300', 'France', '85.57.00.07'),
 (28, 'Gai p?turage', 'Eliane Noz', 'Bat. B 3, rue des Alpes', 'Annecy', '74000', 'France', '38.76.98.06'),
 (29, 'For?ts d\'?rables', 'Chantal Goulet', '148 rue Chasseur', 'Ste-Hyacinthe', 'J2S 7S8', 'Canada', '(514) 555-2955');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_users`
+--
+
+CREATE TABLE `tb_users` (
+  `i_usr_id` tinyint(4) NOT NULL,
+  `c_usr_uname` varchar(15) NOT NULL,
+  `c_usr_pwd` varchar(15) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `tb_users`
+--
+
+INSERT INTO `tb_users` (`i_usr_id`, `c_usr_uname`, `c_usr_pwd`) VALUES
+(1, 'martha2l', '123456');
 
 --
 -- Indexes for dumped tables
@@ -1208,6 +1220,12 @@ ALTER TABLE `tb_suppliers`
   ADD PRIMARY KEY (`i_SupplierID`);
 
 --
+-- Indexes for table `tb_users`
+--
+ALTER TABLE `tb_users`
+  ADD PRIMARY KEY (`i_usr_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1215,7 +1233,13 @@ ALTER TABLE `tb_suppliers`
 -- AUTO_INCREMENT for table `tb_products`
 --
 ALTER TABLE `tb_products`
-  MODIFY `i_ProductID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `i_ProductID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+
+--
+-- AUTO_INCREMENT for table `tb_users`
+--
+ALTER TABLE `tb_users`
+  MODIFY `i_usr_id` tinyint(4) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
