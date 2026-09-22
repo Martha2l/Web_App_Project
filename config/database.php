@@ -35,7 +35,7 @@ function getDB(): PDO {
 
     // ค่า Default สำหรับ Localhost
     $port = $port ?: '3306';
-    $name = $name ?: 'db_northwind';
+    $name = ($name === 'railway' || !$name) ? 'db_northwind' : $name;
     $user = $user ?: 'root';
     $pass = ($pass !== false && $pass !== null) ? $pass : '';
 
